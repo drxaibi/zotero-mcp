@@ -54,6 +54,7 @@ Add to your Claude Desktop config file:
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`  
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
+**Minimal config (most users):**
 ```json
 {
   "mcpServers": {
@@ -69,9 +70,40 @@ Add to your Claude Desktop config file:
 }
 ```
 
+**Full config with all options:**
+```json
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "node",
+      "args": ["/path/to/zotero-mcp/dist/index.js"],
+      "env": {
+        "ZOTERO_API_KEY": "your-api-key-here",
+        "ZOTERO_USER_ID": "your-user-id-here",
+        "ZOTERO_MODE": "web",
+        "ZOTERO_GROUP_ID": "",
+        "ZOTERO_DEFAULT_LIMIT": "25",
+        "ZOTERO_CACHE_TTL": "300",
+        "ZOTERO_MAX_FULLTEXT_LENGTH": "100000"
+      }
+    }
+  }
+}
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `ZOTERO_API_KEY` | *required* | Your Zotero API key |
+| `ZOTERO_USER_ID` | *required* | Your Zotero user ID |
+| `ZOTERO_MODE` | `web` | `web` (API) or `local` (SQLite) |
+| `ZOTERO_GROUP_ID` | *empty* | Group library ID (if accessing group instead of personal) |
+| `ZOTERO_DEFAULT_LIMIT` | `25` | Results per query (1-100) |
+| `ZOTERO_CACHE_TTL` | `300` | Cache duration in seconds |
+| `ZOTERO_MAX_FULLTEXT_LENGTH` | `100000` | Max characters for full-text extraction |
+
 #### For VS Code with Claude Extension
 
-Add to your VS Code settings or MCP configuration:
+Add to your VS Code MCP configuration (`.vscode/mcp.json` or settings):
 
 ```json
 {
@@ -80,7 +112,6 @@ Add to your VS Code settings or MCP configuration:
       "command": "node",
       "args": ["C:/path/to/zotero-mcp/dist/index.js"],
       "env": {
-        "ZOTERO_MODE": "web",
         "ZOTERO_API_KEY": "your-api-key",
         "ZOTERO_USER_ID": "your-user-id"
       }
@@ -91,7 +122,7 @@ Add to your VS Code settings or MCP configuration:
 
 #### Local Mode (Optional)
 
-To read directly from your local Zotero database (faster, works offline):
+To read directly from your local Zotero SQLite database (faster, works offline):
 
 ```json
 {
@@ -101,6 +132,11 @@ To read directly from your local Zotero database (faster, works offline):
   }
 }
 ```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `ZOTERO_MODE` | `web` | Set to `local` for SQLite mode |
+| `ZOTERO_DATA_DIR` | *auto-detected* | Path to Zotero data folder |
 
 > **Note**: Zotero must be closed when using local mode due to SQLite file locking.
 
@@ -144,16 +180,20 @@ Once connected, you can ask Claude things like:
 - *"What papers did I add this week?"*
 - *"Summarize the key findings from my climate change papers"*
 
-## Environment Variables
+## All Environment Variables
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ZOTERO_MODE` | No | `web` | `web` or `local` |
-| `ZOTERO_API_KEY` | Yes (web) | - | Your Zotero API key |
-| `ZOTERO_USER_ID` | Yes (web) | - | Your Zotero user ID |
-| `ZOTERO_GROUP_ID` | No | - | Group library ID (optional) |
-| `ZOTERO_DATA_DIR` | No | Auto-detected | Path to Zotero data folder |
-| `ZOTERO_DEFAULT_LIMIT` | No | `25` | Default results per query |
+| `ZOTERO_API_KEY` | Yes (web mode) | - | Your Zotero API key |
+| `ZOTERO_USER_ID` | Yes (web mode) | - | Your Zotero user ID |
+| `ZOTERO_MODE` | No | `web` | `web` (API) or `local` (SQLite) |
+| `ZOTERO_GROUP_ID` | No | - | Group library ID (use group instead of personal library) |
+| `ZOTERO_DATA_DIR` | No | Auto-detected | Path to Zotero data folder (local mode) |
+| `ZOTERO_DEFAULT_LIMIT` | No | `25` | Results per query (1-100) |
+| `ZOTERO_CACHE_ENABLED` | No | `true` | Enable/disable response caching |
+| `ZOTERO_CACHE_TTL` | No | `300` | Cache duration in seconds |
+| `ZOTERO_EXTRACT_PDF` | No | `true` | Enable PDF text extraction |
+| `ZOTERO_MAX_FULLTEXT_LENGTH` | No | `100000` | Max characters for full-text |
 
 ## Architecture
 

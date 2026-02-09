@@ -22,6 +22,29 @@ interface ApiResponse<T> {
   headers: Headers;
 }
 
+// Zotero API response wraps item data in a 'data' property
+interface ApiItemResponse {
+  key: string;
+  version: number;
+  library?: unknown;
+  links?: unknown;
+  meta?: unknown;
+  data: Record<string, unknown>;
+}
+
+/**
+ * Transform API response item to our ZoteroItem format.
+ * The Zotero API wraps actual item fields in a 'data' property.
+ */
+function mapApiItem(apiItem: ApiItemResponse): ZoteroItem {
+  // Merge top-level key/version with the data fields
+  return {
+    key: apiItem.key,
+    version: apiItem.version,
+    ...apiItem.data,
+  } as ZoteroItem;
+}
+
 export class WebAPIBackend implements ZoteroBackend {
   private config: ZoteroConfig;
   private headers: Record<string, string>;
@@ -113,9 +136,9 @@ export class WebAPIBackend implements ZoteroBackend {
   }
 
   private async fetchItemsWithTotal(endpoint: string): Promise<SearchResult> {
-    const { data, headers } = await this.request<ZoteroItem[]>(endpoint);
+    const { data, headers } = await this.request<ApiItemResponse[]>(endpoint);
     const totalResults = parseInt(headers.get("Total-Results") || "0", 10);
-    const items = data;
+    const items = data.map(mapApiItem);
 
     // Parse Link header for pagination
     const linkHeader = headers.get("Link") || "";
@@ -131,15 +154,17 @@ export class WebAPIBackend implements ZoteroBackend {
 
   async getItem(key: string, includeChildren = true): Promise<ZoteroItem | null> {
     try {
-      const { data: item } = await this.request<ZoteroItem>(
+      const { data: apiItem } = await this.request<ApiItemResponse>(
         `/${this.libraryPrefix}/items/${key}`
       );
+      const item = mapApiItem(apiItem);
 
       if (includeChildren) {
         // Fetch children (notes, attachments)
-        const { data: children } = await this.request<ZoteroItem[]>(
+        const { data: apiChildren } = await this.request<ApiItemResponse[]>(
           `/${this.libraryPrefix}/items/${key}/children`
         );
+        const children = apiChildren.map(mapApiItem);
 
         item.attachments = children.filter(
           (c) => c.itemType === "attachment"
@@ -263,16 +288,18 @@ export class WebAPIBackend implements ZoteroBackend {
   }
 
   async getItemNotes(key: string): Promise<ZoteroNote[]> {
-    const { data: children } = await this.request<ZoteroItem[]>(
+    const { data: apiChildren } = await this.request<ApiItemResponse[]>(
       `/${this.libraryPrefix}/items/${key}/children?format=json`
     );
+    const children = apiChildren.map(mapApiItem);
     return children.filter((c) => c.itemType === "note") as unknown as ZoteroNote[];
   }
 
   async getItemAttachments(key: string): Promise<ZoteroAttachment[]> {
-    const { data: children } = await this.request<ZoteroItem[]>(
+    const { data: apiChildren } = await this.request<ApiItemResponse[]>(
       `/${this.libraryPrefix}/items/${key}/children?format=json`
     );
+    const children = apiChildren.map(mapApiItem);
     return children.filter((c) => c.itemType === "attachment") as unknown as ZoteroAttachment[];
   }
 
@@ -283,9 +310,10 @@ export class WebAPIBackend implements ZoteroBackend {
 
     for (const attachment of attachments) {
       if (attachment.contentType === "application/pdf") {
-        const { data: children } = await this.request<ZoteroItem[]>(
+        const { data: apiChildren } = await this.request<ApiItemResponse[]>(
           `/${this.libraryPrefix}/items/${attachment.key}/children?format=json`
         );
+        const children = apiChildren.map(mapApiItem);
         const attachmentAnnotations = children.filter(
           (c) => c.itemType === "annotation"
         ) as unknown as ZoteroAnnotation[];
@@ -329,15 +357,16 @@ export class WebAPIBackend implements ZoteroBackend {
       direction: "desc",
     };
 
-    const { data } = await this.request<ZoteroItem[]>(
+    const { data } = await this.request<ApiItemResponse[]>(
       `/${this.libraryPrefix}/items/top${this.buildQueryString(params)}`
     );
+    const items = data.map(mapApiItem);
 
     // Filter by date
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
 
-    return data.filter((item) => {
+    return items.filter((item) => {
       if (item.dateModified) {
         return new Date(item.dateModified) >= cutoff;
       }
@@ -403,10 +432,10 @@ export class WebAPIBackend implements ZoteroBackend {
       limit,
     };
 
-    const { data } = await this.request<ZoteroItem[]>(
+    const { data } = await this.request<ApiItemResponse[]>(
       `/${this.libraryPrefix}/items${this.buildQueryString(params)}`
     );
 
-    return data;
+    return data.map(mapApiItem);
   }
 }
