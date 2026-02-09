@@ -1,0 +1,54 @@
+Zotero Main Web Domain 
+https://www.zotero.org
+
+Zotero support Links availale at 
+https://www.zotero.org/support/
+
+Zotero data schema
+https://api.zotero.org/itemFields?pprint=1
+https://github.com/zotero/zotero-schema/tree/master
+
+CSL/Zotero Metadata Field Index
+https://aurimasv.github.io/z2csl/typeMap.xml
+
+Zotero Web API v3
+This is the default version of the API, and it is recommended for new development.
+WEB API Documentation
+https://www.zotero.org/support/dev/web_api/v3/basics
+https://www.zotero.org/support/dev/web_api/v3/types_and_fields
+https://www.zotero.org/support/dev/web_api/v3/write_requests
+https://www.zotero.org/support/dev/web_api/v3/file_upload
+https://www.zotero.org/support/dev/web_api/v3/fulltext_content
+https://www.zotero.org/support/dev/web_api/v3/syncing
+https://www.zotero.org/support/dev/web_api/v3/streaming_api
+https://www.zotero.org/support/dev/web_api/v3/oauth
+
+Zotero Local JavaScript API
+https://www.zotero.org/support/dev/client_coding/javascript_api
+
+Direct Access to the Zotero SQLite Database
+https://www.zotero.org/support/dev/client_coding/direct_sqlite_database_access
+
+Zotero Data Directory
+https://www.zotero.org/support/zotero_data
+
+OpenURL Resolvers
+https://www.zotero.org/openurl_resolvers
+
+Adding Files to your Zotero Library
+https://www.zotero.org/support/attaching_files
+
+Adding Items to Zotero
+https://www.zotero.org/support/adding_items_to_zotero
+
+Retrieve PDF Metadata
+https://www.zotero.org/support/retrieve_pdf_metadata
+
+
+Client Libraries
+Known client libraries for the Zotero API include:
+https://github.com/tnajdek/zotero-api-client (JavaScript)
+https://github.com/urschrei/pyzotero (Python)
+https://github.com/fcheslack/libZotero (PHP and Python)
+https://github.com/shazino/SZNZotero (Objective-C)
+https://github.com/retorquere/zotero-sync (TypeScript)
