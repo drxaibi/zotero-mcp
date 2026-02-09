@@ -122,23 +122,38 @@ Add to your VS Code MCP configuration (`.vscode/mcp.json` or settings):
 
 #### Local Mode (Optional)
 
-To read directly from your local Zotero SQLite database (faster, works offline):
+To read directly from your local Zotero SQLite database (faster, works offline).
+
+**No API key needed!** Just set the mode and optionally the data directory:
 
 ```json
 {
-  "env": {
-    "ZOTERO_MODE": "local",
-    "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
+  "mcpServers": {
+    "zotero": {
+      "command": "node",
+      "args": ["C:/path/to/zotero-mcp/dist/index.js"],
+      "env": {
+        "ZOTERO_MODE": "local",
+        "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
+      }
+    }
   }
 }
 ```
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `ZOTERO_MODE` | `web` | Set to `local` for SQLite mode |
-| `ZOTERO_DATA_DIR` | *auto-detected* | Path to Zotero data folder |
+| Setting | Required | Default | Description |
+|---------|----------|---------|-------------|
+| `ZOTERO_MODE` | Yes | - | Must be `local` |
+| `ZOTERO_DATA_DIR` | No | *auto-detected* | Path to Zotero data folder |
+| `ZOTERO_API_KEY` | No | - | **Not needed in local mode** |
+| `ZOTERO_USER_ID` | No | - | **Not needed in local mode** |
 
-> **Note**: Zotero must be closed when using local mode due to SQLite file locking.
+**Auto-detected paths:**
+- Windows: `C:\Users\YourName\Zotero`
+- macOS: `/Users/YourName/Zotero`
+- Linux: `/home/yourname/Zotero`
+
+> **Important**: Zotero app must be **closed** when using local mode (SQLite file locking).
 
 ## Available Tools
 
