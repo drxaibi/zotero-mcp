@@ -272,6 +272,23 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## Citation
+
+If you use this project in your research or work, please cite it:
+
+```bibtex
+@software{zotero_mcp_2026,
+  author = {drxaibi},
+  title = {Zotero MCP Server: Model Context Protocol Server for Zotero},
+  year = {2026},
+  url = {https://github.com/drxaibi/zotero-mcp},
+  note = {A Model Context Protocol server providing LLM access to Zotero research libraries}
+}
+```
+
+Or in text format:
+> drxaibi. (2026). *Zotero MCP Server: Model Context Protocol Server for Zotero*. GitHub. https://github.com/drxaibi/zotero-mcp
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
