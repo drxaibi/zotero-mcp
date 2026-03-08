@@ -70,111 +70,9 @@ Choose your AI assistant and follow the setup instructions:
 
 ---
 
-#### Claude Desktop
+### MCP Configuration
 
-**Config file location:**
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-
-**Open config file:**
-```powershell
-# Windows (PowerShell)
-code $env:AppData\Claude\claude_desktop_config.json
-```
-```bash
-# macOS/Linux
-code ~/Library/Application\ Support/Claude/claude_desktop_config.json
-```
-
-**Add this configuration:**
-```jsonc
-{
-  "mcpServers": {
-    "zotero": {
-      "command": "node",
-      "args": ["C:\\path\\to\\zotero-mcp\\dist\\index.js"],
-      "env": {
-        // Web API mode (default)
-        "ZOTERO_API_KEY": "your-api-key-here",
-        "ZOTERO_USER_ID": "your-user-id-here"
-        
-        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
-        // "ZOTERO_MODE": "local",
-        // "ZOTERO_DATA_DIR": "C:\\Users\\YourName\\Zotero"
-      }
-    }
-  }
-}
-```
-
-> **Note**: Use absolute paths. On Windows, escape backslashes (`\\`) or use forward slashes (`/`).  
-> **Local mode**: Zotero app must be closed (SQLite file locking).
-
-**Restart Claude Desktop** to load the server.
-
----
-
-#### VS Code with GitHub Copilot
-
-GitHub Copilot supports MCP servers via the `.vscode/mcp.json` file in your workspace.
-
-**1. Create `.vscode/mcp.json` in your workspace:**
-
-```jsonc
-{
-  "servers": {
-    "zotero": {
-      "command": "node",
-      "args": ["C:/path/to/zotero-mcp/dist/index.js"],
-      "env": {
-        // Web API mode (default)
-        "ZOTERO_API_KEY": "your-api-key-here",
-        "ZOTERO_USER_ID": "your-user-id-here"
-        
-        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
-        // "ZOTERO_MODE": "local",
-        // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
-      }
-    }
-  }
-}
-```
-
-**2. Or add to VS Code User Settings (JSON):**
-
-Press `Ctrl+Shift+P` → "Preferences: Open User Settings (JSON)" and add:
-
-```jsonc
-{
-  "mcp": {
-    "servers": {
-      "zotero": {
-        "command": "node",
-        "args": ["C:/path/to/zotero-mcp/dist/index.js"],
-        "env": {
-          // Web API mode (default)
-          "ZOTERO_API_KEY": "your-api-key-here",
-          "ZOTERO_USER_ID": "your-user-id-here"
-          
-          // Local mode (uncomment below, comment out API_KEY and USER_ID above)
-          // "ZOTERO_MODE": "local",
-          // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
-        }
-      }
-    }
-  }
-}
-```
-
-**3. Reload VS Code** to activate the MCP server.
-
----
-
-#### VS Code with Claude Extension
-
-The Claude extension for VS Code uses the same MCP configuration format.
-
-**Create `.vscode/mcp.json` in your workspace:**
+Add the following configuration to your MCP client. Replace the path with your actual `zotero-mcp` location:
 
 ```jsonc
 {
@@ -188,79 +86,40 @@ The Claude extension for VS Code uses the same MCP configuration format.
         "ZOTERO_USER_ID": "your-user-id-here"
         
         // Local mode (uncomment below, comment out API_KEY and USER_ID above)
-        // "ZOTERO_MODE": "local",
-        // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
+        // "ZOTERO_MODE": "local"
+        // "ZOTERO_DATA_DIR": ""  // Leave empty for auto-detection, or set your path
       }
     }
   }
 }
 ```
+
+> **Path format**: Use forward slashes (`/`) or escaped backslashes (`\\`). Always use absolute paths.  
+> **Local mode**: Close Zotero app before using (SQLite file locking).
 
 ---
 
-#### Claude Code (CLI)
+### Where to Add Configuration
 
-Claude Code uses a global MCP configuration file.
+| Client | Config File Location | Root Key |
+|--------|---------------------|----------|
+| **Claude Desktop** | Windows: `%APPDATA%\Claude\claude_desktop_config.json`<br>macOS: `~/Library/Application Support/Claude/claude_desktop_config.json` | `mcpServers` |
+| **VS Code + Copilot** | `.vscode/mcp.json` in workspace | `servers` |
+| **VS Code + Claude** | `.vscode/mcp.json` in workspace | `mcpServers` |
+| **Claude Code (CLI)** | Windows: `%USERPROFILE%\.claude\settings.json`<br>macOS/Linux: `~/.claude/settings.json` | `mcpServers` |
+| **Cursor** | `.cursor/mcp.json` in workspace<br>or Settings → Features → MCP Servers | `mcpServers` |
 
-**Config file location:**
-- **Windows**: `%USERPROFILE%\.claude\settings.json`
-- **macOS/Linux**: `~/.claude/settings.json`
-
-**Add this configuration:**
-
+**Note for VS Code + Copilot**: Use `"servers"` instead of `"mcpServers"` as the root key:
 ```jsonc
-{
-  "mcpServers": {
-    "zotero": {
-      "command": "node",
-      "args": ["/absolute/path/to/zotero-mcp/dist/index.js"],
-      "env": {
-        // Web API mode (default)
-        "ZOTERO_API_KEY": "your-api-key-here",
-        "ZOTERO_USER_ID": "your-user-id-here"
-        
-        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
-        // "ZOTERO_MODE": "local",
-        // "ZOTERO_DATA_DIR": "/Users/YourName/Zotero"
-      }
-    }
-  }
-}
+{ "servers": { "zotero": { ... } } }
 ```
 
----
-
-#### Cursor
-
-Cursor supports MCP servers through its settings.
-
-**1. Open Cursor Settings:** `Ctrl+Shift+J` (or `Cmd+Shift+J` on macOS)
-
-**2. Navigate to:** Features → MCP Servers
-
-**3. Add a new MCP server with this configuration:**
-
+**VS Code User Settings** (global): Press `Ctrl+Shift+P` → "Preferences: Open User Settings (JSON)" and wrap in `"mcp"`:
 ```jsonc
-{
-  "mcpServers": {
-    "zotero": {
-      "command": "node",
-      "args": ["C:/path/to/zotero-mcp/dist/index.js"],
-      "env": {
-        // Web API mode (default)
-        "ZOTERO_API_KEY": "your-api-key-here",
-        "ZOTERO_USER_ID": "your-user-id-here"
-        
-        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
-        // "ZOTERO_MODE": "local",
-        // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
-      }
-    }
-  }
-}
+{ "mcp": { "servers": { "zotero": { ... } } } }
 ```
 
-**Or create `.cursor/mcp.json` in your workspace** (same format as above).
+After adding configuration, restart your client to load the server.
 
 ---
 
@@ -301,8 +160,8 @@ Cursor supports MCP servers through its settings.
         "ZOTERO_MAX_FULLTEXT_LENGTH": "100000"
         
         // Local mode (uncomment and comment out API_KEY/USER_ID above)
-        // "ZOTERO_MODE": "local",
-        // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
+        // "ZOTERO_MODE": "local"
+        // "ZOTERO_DATA_DIR": ""  // Leave empty for auto-detection, or set your path
       }
     }
   }
@@ -311,8 +170,24 @@ Cursor supports MCP servers through its settings.
 
 **Local mode notes:**
 - No API key needed - just set `ZOTERO_MODE` to `local`
-- `ZOTERO_DATA_DIR` auto-detects: Windows `C:\Users\YourName\Zotero`, macOS `/Users/YourName/Zotero`, Linux `/home/yourname/Zotero`
 - Zotero app must be **closed** when using local mode (SQLite file locking)
+
+**Finding your Zotero data directory:**
+
+1. Open Zotero app
+2. Go to **Edit → Settings** (Windows/Linux) or **Zotero → Settings** (macOS)
+3. Click **Advanced** → **Files and Folders**
+4. Look for **Data Directory Location** — copy this path
+
+**Auto-detection:** Leave `ZOTERO_DATA_DIR` empty (`""`) or omit it entirely. The server will automatically look for:
+- Windows: `C:\Users\<YourUsername>\Zotero`
+- macOS: `/Users/<YourUsername>/Zotero`
+- Linux: `/home/<YourUsername>/Zotero`
+
+**If auto-detection fails**, set the exact path from Zotero settings:
+```jsonc
+"ZOTERO_DATA_DIR": "C:/Users/John/Zotero"  // Use YOUR actual path
+```
 
 ## Available Tools
 
