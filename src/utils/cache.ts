@@ -1,7 +1,3 @@
-/**
- * Simple in-memory cache utility.
- */
-
 interface CacheEntry<T> {
   value: T;
   expires: number;
@@ -46,9 +42,6 @@ export class Cache<T> {
     this.store.clear();
   }
 
-  /**
-   * Remove expired entries.
-   */
   cleanup(): void {
     const now = Date.now();
     for (const [key, entry] of this.store.entries()) {

@@ -1,8 +1,3 @@
-/**
- * MCP Tools for Zotero.
- * Defines all available tools that LLMs can invoke.
- */
-
 import { z } from "zod";
 import type { ZoteroBackend } from "../backends/interface.js";
 import {
@@ -67,9 +62,6 @@ export const getRecentItemsSchema = z.object({
   limit: z.number().optional().default(25).describe("Maximum number of results"),
 });
 
-/**
- * Format a Zotero item for display to the LLM.
- */
 function formatItem(item: Record<string, unknown>): string {
   const lines: string[] = [];
 
@@ -128,9 +120,6 @@ function formatItem(item: Record<string, unknown>): string {
   return lines.join("\n");
 }
 
-/**
- * Format a collection of items as a list.
- */
 function formatItemList(items: Array<Record<string, unknown>>): string {
   if (items.length === 0) {
     return "No items found.";
@@ -145,9 +134,6 @@ function formatItemList(items: Array<Record<string, unknown>>): string {
     .join("\n\n");
 }
 
-/**
- * Register all Zotero tools with the MCP server.
- */
 export function registerTools(
   server: {
     tool: (
@@ -183,7 +169,6 @@ export function registerTools(
     }
   );
 
-  // get_item
   server.tool(
     "get_item",
     "Get complete details for a specific Zotero item including all metadata, abstract, creators, tags, notes, and attachments.",
@@ -239,7 +224,6 @@ export function registerTools(
     }
   );
 
-  // get_item_fulltext
   server.tool(
     "get_item_fulltext",
     "Extract and return the full text content from an item's PDF attachments. Use this to get the complete paper/document content for analysis.",
@@ -270,7 +254,6 @@ export function registerTools(
     }
   );
 
-  // get_item_notes
   server.tool(
     "get_item_notes",
     "Get all notes attached to a Zotero item. Notes may contain user annotations, summaries, or extracted information.",
@@ -296,7 +279,6 @@ export function registerTools(
     }
   );
 
-  // get_item_annotations
   server.tool(
     "get_item_annotations",
     "Get PDF annotations (highlights, comments, notes) from an item's attachments. Useful for understanding what parts of a paper the user found important.",
@@ -339,7 +321,6 @@ export function registerTools(
     }
   );
 
-  // list_collections
   server.tool(
     "list_collections",
     "List all collections in the Zotero library. Collections are folders used to organize items.",
@@ -379,7 +360,6 @@ export function registerTools(
     }
   );
 
-  // get_collection_items
   server.tool(
     "get_collection_items",
     "Get all items in a specific Zotero collection.",
@@ -410,7 +390,6 @@ export function registerTools(
     }
   );
 
-  // list_tags
   server.tool(
     "list_tags",
     "List all tags in the Zotero library with item counts. Tags are labels used to categorize items.",
@@ -433,7 +412,6 @@ export function registerTools(
     }
   );
 
-  // search_fulltext
   server.tool(
     "search_fulltext",
     "Search across the full text content of all PDFs in the library. Use this to find papers that mention specific terms, methods, or concepts.",
@@ -461,7 +439,6 @@ export function registerTools(
     }
   );
 
-  // get_bibliography
   server.tool(
     "get_bibliography",
     "Generate formatted bibliography/citations for specified items in a given citation style.",
@@ -481,7 +458,6 @@ export function registerTools(
     }
   );
 
-  // get_related_items
   server.tool(
     "get_related_items",
     "Get items that are marked as related to a given item in Zotero.",
@@ -506,7 +482,6 @@ export function registerTools(
     }
   );
 
-  // get_recent_items
   server.tool(
     "get_recent_items",
     "Get recently added or modified items in the library.",

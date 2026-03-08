@@ -1,8 +1,3 @@
-/**
- * Web API Backend for Zotero MCP Server.
- * Uses the Zotero Web API v3.
- */
-
 import type { ZoteroConfig } from "../config.js";
 import { getLibraryPrefix } from "../config.js";
 import type {
@@ -22,7 +17,6 @@ interface ApiResponse<T> {
   headers: Headers;
 }
 
-// Zotero API response wraps item data in a 'data' property
 interface ApiItemResponse {
   key: string;
   version: number;
@@ -32,12 +26,7 @@ interface ApiItemResponse {
   data: Record<string, unknown>;
 }
 
-/**
- * Transform API response item to our ZoteroItem format.
- * The Zotero API wraps actual item fields in a 'data' property.
- */
 function mapApiItem(apiItem: ApiItemResponse): ZoteroItem {
-  // Merge top-level key/version with the data fields
   return {
     key: apiItem.key,
     version: apiItem.version,
@@ -113,17 +102,15 @@ export class WebAPIBackend implements ZoteroBackend {
 
     if (query) {
       params.q = query;
-      params.qmode = "everything"; // Search full text too
+      params.qmode = "everything";
     }
     if (filters?.itemType) {
       params.itemType = filters.itemType;
     }
     if (filters?.tags && filters.tags.length > 0) {
-      // Multiple tags require separate params
       params.tag = filters.tags.join(" || ");
     }
     if (filters?.collectionKey) {
-      // Use collection endpoint instead
       const endpoint = `/${this.libraryPrefix}/collections/${filters.collectionKey}/items${this.buildQueryString(params)}`;
       return this.fetchItemsWithTotal(endpoint);
     }
@@ -139,8 +126,6 @@ export class WebAPIBackend implements ZoteroBackend {
     const { data, headers } = await this.request<ApiItemResponse[]>(endpoint);
     const totalResults = parseInt(headers.get("Total-Results") || "0", 10);
     const items = data.map(mapApiItem);
-
-    // Parse Link header for pagination
     const linkHeader = headers.get("Link") || "";
     const hasMore = linkHeader.includes('rel="next"');
 
@@ -160,7 +145,6 @@ export class WebAPIBackend implements ZoteroBackend {
       const item = mapApiItem(apiItem);
 
       if (includeChildren) {
-        // Fetch children (notes, attachments)
         const { data: apiChildren } = await this.request<ApiItemResponse[]>(
           `/${this.libraryPrefix}/items/${key}/children`
         );
@@ -193,8 +177,6 @@ export class WebAPIBackend implements ZoteroBackend {
       if (!item) return null;
 
       const texts: string[] = [];
-
-      // Get fulltext for PDF attachments
       const attachments = item.attachments || [];
       for (const attachment of attachments) {
         if (attachment.contentType === "application/pdf") {
@@ -212,7 +194,6 @@ export class WebAPIBackend implements ZoteroBackend {
         }
       }
 
-      // Also try the item itself if it's an attachment
       if (item.itemType === "attachment") {
         try {
           const { data } = await this.request<{ content: string }>(
@@ -221,9 +202,7 @@ export class WebAPIBackend implements ZoteroBackend {
           if (data.content) {
             texts.push(data.content);
           }
-        } catch {
-          // Ignore
-        }
+        } catch {}
       }
 
       return texts.length > 0 ? texts.join("\n\n---\n\n") : null;
@@ -266,8 +245,6 @@ export class WebAPIBackend implements ZoteroBackend {
     let endpoint = `/${this.libraryPrefix}/collections/${collectionKey}/items/top${this.buildQueryString(params)}`;
 
     if (recursive) {
-      // For recursive, we need to get subcollections and their items too
-      // This is a simplified version - full recursive would need multiple calls
       endpoint = `/${this.libraryPrefix}/collections/${collectionKey}/items${this.buildQueryString(params)}`;
     }
 
@@ -304,7 +281,6 @@ export class WebAPIBackend implements ZoteroBackend {
   }
 
   async getItemAnnotations(key: string): Promise<ZoteroAnnotation[]> {
-    // Annotations are children of attachment items
     const attachments = await this.getItemAttachments(key);
     const annotations: ZoteroAnnotation[] = [];
 
@@ -328,7 +304,6 @@ export class WebAPIBackend implements ZoteroBackend {
     const item = await this.getItem(key, false);
     if (!item || !item.relations) return [];
 
-    // Relations are stored as dc:relation URIs
     const relatedUris = item.relations["dc:relation"];
     if (!relatedUris) return [];
 
@@ -336,7 +311,6 @@ export class WebAPIBackend implements ZoteroBackend {
     const relatedItems: ZoteroItem[] = [];
 
     for (const uri of uris) {
-      // Extract key from URI like "http://zotero.org/users/xxx/items/KEY"
       const match = uri.match(/\/items\/([A-Z0-9]+)$/);
       if (match) {
         const relatedItem = await this.getItem(match[1], false);
@@ -361,8 +335,6 @@ export class WebAPIBackend implements ZoteroBackend {
       `/${this.libraryPrefix}/items/top${this.buildQueryString(params)}`
     );
     const items = data.map(mapApiItem);
-
-    // Filter by date
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
 
@@ -375,26 +347,20 @@ export class WebAPIBackend implements ZoteroBackend {
   }
 
   async getLibraryStats(): Promise<LibraryStats> {
-    // Get total items
     const { headers: itemHeaders } = await this.request<ZoteroItem[]>(
       `/${this.libraryPrefix}/items/top?format=json&limit=1`
     );
     const totalItems = parseInt(itemHeaders.get("Total-Results") || "0", 10);
 
-    // Get collections count
     const { data: collections } = await this.request<ZoteroCollection[]>(
       `/${this.libraryPrefix}/collections?format=json&limit=100`
     );
 
-    // Get tags count
     const { data: tags } = await this.request<Array<{ tag: string }>>(
       `/${this.libraryPrefix}/tags?format=json&limit=100`
     );
 
-    // Get items by type (sample)
     const itemsByType: Record<string, number> = {};
-
-    // Get recent items for counts
     const recentItems = await this.getRecentItems(7, 100);
     const todayItems = await this.getRecentItems(1, 100);
 
@@ -410,7 +376,6 @@ export class WebAPIBackend implements ZoteroBackend {
   }
 
   async getBibliography(keys: string[], style = "apa"): Promise<string> {
-    // Use format=bib endpoint for bibliography
     const keyList = keys.join(",");
     const response = await fetch(
       `${this.config.apiBaseUrl}/${this.libraryPrefix}/items?itemKey=${keyList}&format=bib&style=${style}`,

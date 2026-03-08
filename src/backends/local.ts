@@ -1,8 +1,3 @@
-/**
- * Local SQLite Backend for Zotero MCP Server.
- * Directly reads from the Zotero SQLite database (read-only).
- */
-
 import * as path from "path";
 import * as fs from "fs";
 import Database from "better-sqlite3";
@@ -22,11 +17,8 @@ import type {
 import type { ZoteroCreator, ZoteroTag } from "./types.js";
 import { extractPdfText } from "../utils/pdf-extractor.js";
 
-// Field name mappings from fieldID to field name
 const FIELD_NAMES: Record<number, string> = {};
-// Item type mappings
 const ITEM_TYPES: Record<number, string> = {};
-// Creator type mappings
 const CREATOR_TYPES: Record<number, string> = {};
 
 export class LocalBackend implements ZoteroBackend {
@@ -41,7 +33,6 @@ export class LocalBackend implements ZoteroBackend {
       throw new Error(`Zotero database not found at: ${dbPath}`);
     }
 
-    // Open in read-only mode
     this.db = new Database(dbPath, { readonly: true, fileMustExist: true });
     this.storagePath = getStoragePath(config);
 
@@ -50,7 +41,6 @@ export class LocalBackend implements ZoteroBackend {
   }
 
   private loadMappings(): void {
-    // Load field names
     const fields = this.db
       .prepare("SELECT fieldID, fieldName FROM fields")
       .all() as Array<{ fieldID: number; fieldName: string }>;
@@ -58,7 +48,6 @@ export class LocalBackend implements ZoteroBackend {
       FIELD_NAMES[field.fieldID] = field.fieldName;
     }
 
-    // Load item types
     const itemTypes = this.db
       .prepare("SELECT itemTypeID, typeName FROM itemTypes")
       .all() as Array<{ itemTypeID: number; typeName: string }>;
@@ -66,7 +55,6 @@ export class LocalBackend implements ZoteroBackend {
       ITEM_TYPES[type.itemTypeID] = type.typeName;
     }
 
-    // Load creator types
     const creatorTypes = this.db
       .prepare("SELECT creatorTypeID, creatorType FROM creatorTypes")
       .all() as Array<{ creatorTypeID: number; creatorType: string }>;
@@ -208,7 +196,6 @@ export class LocalBackend implements ZoteroBackend {
     `;
     const params: (string | number)[] = [];
 
-    // Text search
     if (query) {
       sql += `
         AND i.itemID IN (
@@ -225,7 +212,6 @@ export class LocalBackend implements ZoteroBackend {
       params.push(searchTerm, searchTerm, searchTerm);
     }
 
-    // Item type filter
     if (filters?.itemType) {
       const types = filters.itemType.split(",").map((t) => t.trim());
       const placeholders = types.map(() => "?").join(", ");
@@ -233,7 +219,6 @@ export class LocalBackend implements ZoteroBackend {
       params.push(...types);
     }
 
-    // Tags filter
     if (filters?.tags && filters.tags.length > 0) {
       for (const tag of filters.tags) {
         sql += `
@@ -247,7 +232,6 @@ export class LocalBackend implements ZoteroBackend {
       }
     }
 
-    // Collection filter
     if (filters?.collectionKey) {
       sql += `
         AND i.itemID IN (
@@ -259,21 +243,18 @@ export class LocalBackend implements ZoteroBackend {
       params.push(filters.collectionKey);
     }
 
-    // Sort - validate direction to prevent SQL injection
+    // Whitelist sort direction to prevent SQL injection
     const sortField = filters?.sort || "dateModified";
     const directionRaw = filters?.direction?.toLowerCase() || "desc";
-    const direction = directionRaw === "asc" ? "ASC" : "DESC"; // Whitelist only valid values
+    const direction = directionRaw === "asc" ? "ASC" : "DESC";
     sql += ` ORDER BY i.${sortField === "dateModified" ? "dateModified" : "dateAdded"} ${direction}`;
 
-    // Count total
     const countSql = sql.replace(
       /SELECT DISTINCT i\.itemID, i\.key, i\.itemTypeID, i\.version, i\.dateAdded, i\.dateModified/,
       "SELECT COUNT(DISTINCT i.itemID) as count"
     ).replace(/ORDER BY.*$/, "");
     const countResult = this.db.prepare(countSql).get(...params) as { count: number };
     const totalResults = countResult.count;
-
-    // Add pagination
     sql += ` LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
@@ -330,7 +311,6 @@ export class LocalBackend implements ZoteroBackend {
 
     const texts: string[] = [];
 
-    // Check for indexed full text in database
     const fulltextRow = this.db
       .prepare(`
         SELECT fi.content
@@ -346,17 +326,15 @@ export class LocalBackend implements ZoteroBackend {
       texts.push(fulltextRow.content);
     }
 
-    // Try extracting from PDF attachments
     const attachments = item.attachments || [];
     for (const attachment of attachments) {
       if (attachment.contentType === "application/pdf" && this.storagePath) {
-        // Sanitize key and filename to prevent path traversal
+        // Sanitize to prevent path traversal
         const sanitizedKey = attachment.key.replace(/[^a-zA-Z0-9_-]/g, "");
         const sanitizedFilename = (attachment.filename || "").replace(/[\\/]/g, "");
         if (!sanitizedKey || !sanitizedFilename) continue;
         
         const pdfPath = path.join(this.storagePath, sanitizedKey, sanitizedFilename);
-        // Verify path is still within storage directory
         const resolvedPath = path.resolve(pdfPath);
         const resolvedStorage = path.resolve(this.storagePath);
         if (!resolvedPath.startsWith(resolvedStorage + path.sep)) continue;
@@ -390,7 +368,6 @@ export class LocalBackend implements ZoteroBackend {
       version: number;
     }>;
 
-    // Get parent keys
     const idToKey: Record<number, string> = {};
     for (const row of rows) {
       idToKey[row.collectionID] = row.key;
@@ -448,7 +425,6 @@ export class LocalBackend implements ZoteroBackend {
     const updatedFilters = { ...filters, collectionKey };
 
     if (recursive) {
-      // Get all subcollection keys
       const allKeys = [collectionKey];
       const getSubcollections = (parentKey: string): void => {
         const subs = this.db
@@ -465,9 +441,6 @@ export class LocalBackend implements ZoteroBackend {
         }
       };
       getSubcollections(collectionKey);
-
-      // Search in all collections
-      // For now, we'll just use the main collection; full recursive would need OR logic
     }
 
     return this.searchItems(undefined, updatedFilters);
@@ -500,7 +473,6 @@ export class LocalBackend implements ZoteroBackend {
   }
 
   async getItemNotes(key: string): Promise<ZoteroNote[]> {
-    // First get the item ID
     const item = this.db
       .prepare("SELECT itemID FROM items WHERE key = ?")
       .get(key) as { itemID: number } | undefined;
@@ -557,7 +529,6 @@ export class LocalBackend implements ZoteroBackend {
     const linkModes = ["imported_file", "imported_url", "linked_file", "linked_url"];
 
     return attachments.map((a) => {
-      // Get title from item data
       const titleRow = this.db
         .prepare(`
           SELECT iv.value
@@ -587,7 +558,6 @@ export class LocalBackend implements ZoteroBackend {
   }
 
   async getItemAnnotations(key: string): Promise<ZoteroAnnotation[]> {
-    // Get attachments first, then annotations from each PDF
     const attachments = await this.getItemAttachments(key);
     const annotations: ZoteroAnnotation[] = [];
 
@@ -701,7 +671,6 @@ export class LocalBackend implements ZoteroBackend {
   }
 
   async getLibraryStats(): Promise<LibraryStats> {
-    // Total items (excluding attachments, notes, annotations)
     const itemCount = this.db
       .prepare(`
         SELECT COUNT(*) as count
@@ -712,7 +681,6 @@ export class LocalBackend implements ZoteroBackend {
       `)
       .get() as { count: number };
 
-    // Collections
     const collectionCount = this.db
       .prepare(`
         SELECT COUNT(*) as count
@@ -722,12 +690,10 @@ export class LocalBackend implements ZoteroBackend {
       `)
       .get() as { count: number };
 
-    // Tags
     const tagCount = this.db
       .prepare("SELECT COUNT(DISTINCT tagID) as count FROM itemTags")
       .get() as { count: number };
 
-    // Attachments
     const attachmentCount = this.db
       .prepare(`
         SELECT COUNT(*) as count
@@ -738,7 +704,6 @@ export class LocalBackend implements ZoteroBackend {
       `)
       .get() as { count: number };
 
-    // Items by type
     const typeRows = this.db
       .prepare(`
         SELECT it.typeName, COUNT(*) as count
@@ -757,7 +722,6 @@ export class LocalBackend implements ZoteroBackend {
       itemsByType[row.typeName] = row.count;
     }
 
-    // Recent items
     const oneDay = new Date();
     oneDay.setDate(oneDay.getDate() - 1);
     const oneDayStr = oneDay.toISOString().replace("T", " ").replace("Z", "");
@@ -796,13 +760,10 @@ export class LocalBackend implements ZoteroBackend {
   }
 
   async getBibliography(_keys: string[], _style = "apa"): Promise<string> {
-    // Local backend doesn't have citation formatting capability
-    // Would need citeproc-js integration for this
-    return "Bibliography generation requires Web API mode or citeproc-js integration.";
+    return "Bibliography generation requires Web API mode.";
   }
 
   async searchFullText(query: string, limit = 25): Promise<ZoteroItem[]> {
-    // Search in fulltextItems content
     const rows = this.db
       .prepare(`
         SELECT DISTINCT i.key
@@ -815,12 +776,10 @@ export class LocalBackend implements ZoteroBackend {
       `)
       .all(`%${query}%`, limit) as Array<{ key: string }>;
 
-    // Get parent items
     const items: ZoteroItem[] = [];
     const seenKeys = new Set<string>();
 
     for (const row of rows) {
-      // Get parent item key
       const attachment = this.db
         .prepare(`
           SELECT i2.key

@@ -1,13 +1,5 @@
-/**
- * MCP Resources for Zotero.
- * Exposes library data as resources that can be attached to conversations.
- */
-
 import type { ZoteroBackend } from "../backends/interface.js";
 
-/**
- * Register all Zotero resources with the MCP server.
- */
 export function registerResources(
   server: {
     resource: (
@@ -20,7 +12,6 @@ export function registerResources(
   },
   getBackend: () => ZoteroBackend
 ) {
-  // Library statistics
   server.resource(
     "zotero://library/stats",
     "Zotero Library Statistics - Overview of library contents including item counts, collections, and tags",
@@ -57,15 +48,12 @@ export function registerResources(
     }
   );
 
-  // Collections tree
   server.resource(
     "zotero://collections",
     "Zotero Collections - Complete list of all collections in the library",
     async () => {
       const backend = getBackend();
       const collections = await backend.getCollections();
-
-      // Build tree structure
       const byParent: Record<string, typeof collections> = { root: [] };
       for (const col of collections) {
         const parent = (col.parentCollection as string) || "root";
@@ -108,7 +96,6 @@ export function registerResources(
     }
   );
 
-  // Tags list
   server.resource(
     "zotero://tags",
     "Zotero Tags - All tags in the library with item counts",
@@ -136,7 +123,6 @@ export function registerResources(
     }
   );
 
-  // Recent items
   server.resource(
     "zotero://recent",
     "Zotero Recent Items - Items added or modified in the last 7 days",
@@ -167,7 +153,6 @@ export function registerResources(
     }
   );
 
-  // Item types schema
   server.resource(
     "zotero://schema/item-types",
     "Zotero Item Types - List of all item types supported by Zotero",

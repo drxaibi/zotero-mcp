@@ -47,49 +47,205 @@ npm run build
 
 ### Configuration
 
-#### For Claude Desktop
+Choose your AI assistant and follow the setup instructions:
 
-Add to your Claude Desktop config file:
+---
 
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`  
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+#### Claude Desktop
 
-**Minimal config (most users):**
-```json
+**Config file location:**
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**Open config file:**
+```powershell
+# Windows (PowerShell)
+code $env:AppData\Claude\claude_desktop_config.json
+```
+```bash
+# macOS/Linux
+code ~/Library/Application\ Support/Claude/claude_desktop_config.json
+```
+
+**Add this configuration:**
+```jsonc
 {
   "mcpServers": {
     "zotero": {
       "command": "node",
-      "args": ["/path/to/zotero-mcp/dist/index.js"],
+      "args": ["C:\\path\\to\\zotero-mcp\\dist\\index.js"],
       "env": {
+        // Web API mode (default)
         "ZOTERO_API_KEY": "your-api-key-here",
         "ZOTERO_USER_ID": "your-user-id-here"
+        
+        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
+        // "ZOTERO_MODE": "local",
+        // "ZOTERO_DATA_DIR": "C:\\Users\\YourName\\Zotero"
       }
     }
   }
 }
 ```
 
-**Full config with all options:**
-```json
+> **Note**: Use absolute paths. On Windows, escape backslashes (`\\`) or use forward slashes (`/`).  
+> **Local mode**: Zotero app must be closed (SQLite file locking).
+
+**Restart Claude Desktop** to load the server.
+
+---
+
+#### VS Code with GitHub Copilot
+
+GitHub Copilot supports MCP servers via the `.vscode/mcp.json` file in your workspace.
+
+**1. Create `.vscode/mcp.json` in your workspace:**
+
+```jsonc
 {
-  "mcpServers": {
+  "servers": {
     "zotero": {
       "command": "node",
-      "args": ["/path/to/zotero-mcp/dist/index.js"],
+      "args": ["C:/path/to/zotero-mcp/dist/index.js"],
       "env": {
+        // Web API mode (default)
         "ZOTERO_API_KEY": "your-api-key-here",
-        "ZOTERO_USER_ID": "your-user-id-here",
-        "ZOTERO_MODE": "web",
-        "ZOTERO_GROUP_ID": "",
-        "ZOTERO_DEFAULT_LIMIT": "25",
-        "ZOTERO_CACHE_TTL": "300",
-        "ZOTERO_MAX_FULLTEXT_LENGTH": "100000"
+        "ZOTERO_USER_ID": "your-user-id-here"
+        
+        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
+        // "ZOTERO_MODE": "local",
+        // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
       }
     }
   }
 }
 ```
+
+**2. Or add to VS Code User Settings (JSON):**
+
+Press `Ctrl+Shift+P` → "Preferences: Open User Settings (JSON)" and add:
+
+```jsonc
+{
+  "mcp": {
+    "servers": {
+      "zotero": {
+        "command": "node",
+        "args": ["C:/path/to/zotero-mcp/dist/index.js"],
+        "env": {
+          // Web API mode (default)
+          "ZOTERO_API_KEY": "your-api-key-here",
+          "ZOTERO_USER_ID": "your-user-id-here"
+          
+          // Local mode (uncomment below, comment out API_KEY and USER_ID above)
+          // "ZOTERO_MODE": "local",
+          // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
+        }
+      }
+    }
+  }
+}
+```
+
+**3. Reload VS Code** to activate the MCP server.
+
+---
+
+#### VS Code with Claude Extension
+
+The Claude extension for VS Code uses the same MCP configuration format.
+
+**Create `.vscode/mcp.json` in your workspace:**
+
+```jsonc
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "node",
+      "args": ["C:/path/to/zotero-mcp/dist/index.js"],
+      "env": {
+        // Web API mode (default)
+        "ZOTERO_API_KEY": "your-api-key-here",
+        "ZOTERO_USER_ID": "your-user-id-here"
+        
+        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
+        // "ZOTERO_MODE": "local",
+        // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
+      }
+    }
+  }
+}
+```
+
+---
+
+#### Claude Code (CLI)
+
+Claude Code uses a global MCP configuration file.
+
+**Config file location:**
+- **Windows**: `%USERPROFILE%\.claude\settings.json`
+- **macOS/Linux**: `~/.claude/settings.json`
+
+**Add this configuration:**
+
+```jsonc
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "node",
+      "args": ["/absolute/path/to/zotero-mcp/dist/index.js"],
+      "env": {
+        // Web API mode (default)
+        "ZOTERO_API_KEY": "your-api-key-here",
+        "ZOTERO_USER_ID": "your-user-id-here"
+        
+        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
+        // "ZOTERO_MODE": "local",
+        // "ZOTERO_DATA_DIR": "/Users/YourName/Zotero"
+      }
+    }
+  }
+}
+```
+
+---
+
+#### Cursor
+
+Cursor supports MCP servers through its settings.
+
+**1. Open Cursor Settings:** `Ctrl+Shift+J` (or `Cmd+Shift+J` on macOS)
+
+**2. Navigate to:** Features → MCP Servers
+
+**3. Add a new MCP server with this configuration:**
+
+```jsonc
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "node",
+      "args": ["C:/path/to/zotero-mcp/dist/index.js"],
+      "env": {
+        // Web API mode (default)
+        "ZOTERO_API_KEY": "your-api-key-here",
+        "ZOTERO_USER_ID": "your-user-id-here"
+        
+        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
+        // "ZOTERO_MODE": "local",
+        // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
+      }
+    }
+  }
+}
+```
+
+**Or create `.cursor/mcp.json` in your workspace** (same format as above).
+
+---
+
+### Configuration Options
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -100,60 +256,44 @@ Add to your Claude Desktop config file:
 | `ZOTERO_DEFAULT_LIMIT` | `25` | Results per query (1-100) |
 | `ZOTERO_CACHE_TTL` | `300` | Cache duration in seconds |
 | `ZOTERO_MAX_FULLTEXT_LENGTH` | `100000` | Max characters for full-text extraction |
+| `ZOTERO_DATA_DIR` | *auto-detected* | Path to Zotero data folder (local mode only) |
+| `ZOTERO_CACHE_ENABLED` | `true` | Enable/disable response caching |
+| `ZOTERO_EXTRACT_PDF` | `true` | Enable PDF text extraction |
 
-#### For VS Code with Claude Extension
-
-Add to your VS Code MCP configuration (`.vscode/mcp.json` or settings):
-
-```json
+**Full configuration with all options:**
+```jsonc
 {
   "mcpServers": {
     "zotero": {
       "command": "node",
       "args": ["C:/path/to/zotero-mcp/dist/index.js"],
       "env": {
-        "ZOTERO_API_KEY": "your-api-key",
-        "ZOTERO_USER_ID": "your-user-id"
+        // Required for Web API mode
+        "ZOTERO_API_KEY": "your-api-key-here",
+        "ZOTERO_USER_ID": "your-user-id-here",
+        
+        // Optional settings
+        "ZOTERO_MODE": "web",
+        "ZOTERO_GROUP_ID": "",
+        "ZOTERO_DEFAULT_LIMIT": "25",
+        "ZOTERO_CACHE_ENABLED": "true",
+        "ZOTERO_CACHE_TTL": "300",
+        "ZOTERO_EXTRACT_PDF": "true",
+        "ZOTERO_MAX_FULLTEXT_LENGTH": "100000"
+        
+        // Local mode (uncomment and comment out API_KEY/USER_ID above)
+        // "ZOTERO_MODE": "local",
+        // "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
       }
     }
   }
 }
 ```
 
-#### Local Mode (Optional)
-
-To read directly from your local Zotero SQLite database (faster, works offline).
-
-**No API key needed!** Just set the mode and optionally the data directory:
-
-```json
-{
-  "mcpServers": {
-    "zotero": {
-      "command": "node",
-      "args": ["C:/path/to/zotero-mcp/dist/index.js"],
-      "env": {
-        "ZOTERO_MODE": "local",
-        "ZOTERO_DATA_DIR": "C:/Users/YourName/Zotero"
-      }
-    }
-  }
-}
-```
-
-| Setting | Required | Default | Description |
-|---------|----------|---------|-------------|
-| `ZOTERO_MODE` | Yes | - | Must be `local` |
-| `ZOTERO_DATA_DIR` | No | *auto-detected* | Path to Zotero data folder |
-| `ZOTERO_API_KEY` | No | - | **Not needed in local mode** |
-| `ZOTERO_USER_ID` | No | - | **Not needed in local mode** |
-
-**Auto-detected paths:**
-- Windows: `C:\Users\YourName\Zotero`
-- macOS: `/Users/YourName/Zotero`
-- Linux: `/home/yourname/Zotero`
-
-> **Important**: Zotero app must be **closed** when using local mode (SQLite file locking).
+**Local mode notes:**
+- No API key needed - just set `ZOTERO_MODE` to `local`
+- `ZOTERO_DATA_DIR` auto-detects: Windows `C:\Users\YourName\Zotero`, macOS `/Users/YourName/Zotero`, Linux `/home/yourname/Zotero`
+- Zotero app must be **closed** when using local mode (SQLite file locking)
 
 ## Available Tools
 
@@ -195,21 +335,6 @@ Once connected, you can ask Claude things like:
 - *"What papers did I add this week?"*
 - *"Summarize the key findings from my climate change papers"*
 
-## All Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `ZOTERO_API_KEY` | Yes (web mode) | - | Your Zotero API key |
-| `ZOTERO_USER_ID` | Yes (web mode) | - | Your Zotero user ID |
-| `ZOTERO_MODE` | No | `web` | `web` (API) or `local` (SQLite) |
-| `ZOTERO_GROUP_ID` | No | - | Group library ID (use group instead of personal library) |
-| `ZOTERO_DATA_DIR` | No | Auto-detected | Path to Zotero data folder (local mode) |
-| `ZOTERO_DEFAULT_LIMIT` | No | `25` | Results per query (1-100) |
-| `ZOTERO_CACHE_ENABLED` | No | `true` | Enable/disable response caching |
-| `ZOTERO_CACHE_TTL` | No | `300` | Cache duration in seconds |
-| `ZOTERO_EXTRACT_PDF` | No | `true` | Enable PDF text extraction |
-| `ZOTERO_MAX_FULLTEXT_LENGTH` | No | `100000` | Max characters for full-text |
-
 ## Architecture
 
 ```
@@ -227,22 +352,6 @@ Once connected, you can ask Claude things like:
 │   Web API Backend          │      Local SQLite Backend      │
 │   (api.zotero.org)         │      (zotero.sqlite)           │
 └─────────────────────────────────────────────────────────────┘
-```
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run in development mode
-npm run dev
-
-# Build for production
-npm run build
-
-# Watch mode
-npm run watch
 ```
 
 ## Troubleshooting

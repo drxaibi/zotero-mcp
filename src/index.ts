@@ -1,18 +1,4 @@
 #!/usr/bin/env node
-/**
- * Zotero MCP Server
- * 
- * A Model Context Protocol server that provides comprehensive access to Zotero
- * research libraries. Supports both Web API and local SQLite database access.
- * 
- * Environment Variables:
- *   ZOTERO_MODE        - "web" (default) or "local"
- *   ZOTERO_API_KEY     - API key for web mode (get from https://www.zotero.org/settings/keys)
- *   ZOTERO_USER_ID     - User ID for web mode
- *   ZOTERO_GROUP_ID    - Group ID for group libraries (optional)
- *   ZOTERO_DATA_DIR    - Path to Zotero data directory (for local mode)
- */
-
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -29,7 +15,6 @@ import { LocalBackend } from "./backends/local.js";
 import { registerTools } from "./tools/index.js";
 import { registerResources } from "./resources/index.js";
 
-// Tool definitions for ListTools
 const TOOL_DEFINITIONS = [
   {
     name: "search_library",
@@ -168,7 +153,6 @@ const TOOL_DEFINITIONS = [
   },
 ];
 
-// Resource definitions for ListResources
 const RESOURCE_DEFINITIONS = [
   {
     uri: "zotero://library/stats",
@@ -347,7 +331,6 @@ class ZoteroMCPServer {
   }
 }
 
-// Main entry point
 const server = new ZoteroMCPServer();
 server.run().catch((error) => {
   console.error("Fatal error:", error);

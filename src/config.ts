@@ -1,8 +1,3 @@
-/**
- * Configuration management for Zotero MCP Server.
- * Handles environment variables and settings for both Web API and Local modes.
- */
-
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
@@ -36,9 +31,6 @@ export interface ZoteroConfig {
   maxFulltextLength: number;
 }
 
-/**
- * Auto-detect Zotero data directory based on OS.
- */
 function detectZoteroDataDir(): string | undefined {
   const platform = os.platform();
   const home = os.homedir();
@@ -92,9 +84,6 @@ function detectZoteroDataDir(): string | undefined {
   return undefined;
 }
 
-/**
- * Load configuration from environment variables.
- */
 export function loadConfig(): ZoteroConfig {
   const modeStr = (process.env.ZOTERO_MODE || "web").toLowerCase();
   const mode = modeStr === "local" ? ZoteroMode.LOCAL : ZoteroMode.WEB;
@@ -126,9 +115,6 @@ export function loadConfig(): ZoteroConfig {
   };
 }
 
-/**
- * Validate configuration and return list of errors.
- */
 export function validateConfig(config: ZoteroConfig): string[] {
   const errors: string[] = [];
 
@@ -154,9 +140,6 @@ export function validateConfig(config: ZoteroConfig): string[] {
   return errors;
 }
 
-/**
- * Get the API library prefix (users/X or groups/X).
- */
 export function getLibraryPrefix(config: ZoteroConfig): string {
   if (config.groupId) {
     return `groups/${config.groupId}`;
@@ -164,9 +147,6 @@ export function getLibraryPrefix(config: ZoteroConfig): string {
   return `users/${config.userId}`;
 }
 
-/**
- * Get path to zotero.sqlite file.
- */
 export function getSqlitePath(config: ZoteroConfig): string | undefined {
   if (config.dataDir) {
     return path.join(config.dataDir, "zotero.sqlite");
@@ -174,9 +154,6 @@ export function getSqlitePath(config: ZoteroConfig): string | undefined {
   return undefined;
 }
 
-/**
- * Get path to storage directory containing attachments.
- */
 export function getStoragePath(config: ZoteroConfig): string | undefined {
   if (config.dataDir) {
     return path.join(config.dataDir, "storage");

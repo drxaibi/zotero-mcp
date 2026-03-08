@@ -1,7 +1,3 @@
-/**
- * Type definitions for Zotero data structures.
- */
-
 export interface ZoteroCreator {
   creatorType: string; // author, editor, translator, etc.
   firstName?: string;
@@ -171,9 +167,6 @@ export interface LibraryStats {
   recentlyModified: number;
 }
 
-/**
- * Get display name for a creator.
- */
 export function getCreatorDisplayName(creator: ZoteroCreator): string {
   if (creator.name) {
     return creator.name;
@@ -182,9 +175,6 @@ export function getCreatorDisplayName(creator: ZoteroCreator): string {
   return parts.join(" ");
 }
 
-/**
- * Format creators list for display.
- */
 export function formatCreators(creators?: ZoteroCreator[]): string {
   if (!creators || creators.length === 0) {
     return "";
@@ -199,9 +189,6 @@ export function formatCreators(creators?: ZoteroCreator[]): string {
   return names.join(", ");
 }
 
-/**
- * Extract plain text from HTML note content.
- */
 export function noteToPlainText(html: string): string {
   return html
     .replace(/<[^>]+>/g, "")
@@ -214,9 +201,6 @@ export function noteToPlainText(html: string): string {
     .trim();
 }
 
-/**
- * Generate a citation key from item.
- */
 export function generateCitationKey(item: ZoteroItem): string {
   let author = "";
   if (item.creators && item.creators.length > 0) {
