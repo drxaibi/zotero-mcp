@@ -19,7 +19,26 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that p
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 18.0.0
-- A [Zotero](https://www.zotero.org/) account with an API key
+- A [Zotero](https://www.zotero.org/) account with API key *(Web API mode only — not needed for local mode)*
+
+**Check if Node.js is installed:**
+```bash
+node -v
+```
+
+If not installed or version is below 18, download from [nodejs.org](https://nodejs.org/) (LTS recommended) or use a version manager:
+
+```bash
+# Windows (winget)
+winget install OpenJS.NodeJS.LTS
+
+# macOS (Homebrew)
+brew install node
+
+# Linux (apt)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
 
 ### Installation
 
