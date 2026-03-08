@@ -259,10 +259,11 @@ export class LocalBackend implements ZoteroBackend {
       params.push(filters.collectionKey);
     }
 
-    // Sort
+    // Sort - validate direction to prevent SQL injection
     const sortField = filters?.sort || "dateModified";
-    const direction = filters?.direction || "desc";
-    sql += ` ORDER BY i.${sortField === "dateModified" ? "dateModified" : "dateAdded"} ${direction.toUpperCase()}`;
+    const directionRaw = filters?.direction?.toLowerCase() || "desc";
+    const direction = directionRaw === "asc" ? "ASC" : "DESC"; // Whitelist only valid values
+    sql += ` ORDER BY i.${sortField === "dateModified" ? "dateModified" : "dateAdded"} ${direction}`;
 
     // Count total
     const countSql = sql.replace(
@@ -349,7 +350,17 @@ export class LocalBackend implements ZoteroBackend {
     const attachments = item.attachments || [];
     for (const attachment of attachments) {
       if (attachment.contentType === "application/pdf" && this.storagePath) {
-        const pdfPath = path.join(this.storagePath, attachment.key, attachment.filename || "");
+        // Sanitize key and filename to prevent path traversal
+        const sanitizedKey = attachment.key.replace(/[^a-zA-Z0-9_-]/g, "");
+        const sanitizedFilename = (attachment.filename || "").replace(/[\\/]/g, "");
+        if (!sanitizedKey || !sanitizedFilename) continue;
+        
+        const pdfPath = path.join(this.storagePath, sanitizedKey, sanitizedFilename);
+        // Verify path is still within storage directory
+        const resolvedPath = path.resolve(pdfPath);
+        const resolvedStorage = path.resolve(this.storagePath);
+        if (!resolvedPath.startsWith(resolvedStorage + path.sep)) continue;
+        
         if (fs.existsSync(pdfPath)) {
           const pdfText = await extractPdfText(pdfPath);
           if (pdfText) {
