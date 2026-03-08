@@ -99,6 +99,27 @@ Add the following configuration to your MCP client. Replace the path with your a
 
 ---
 
+**Note for VS Code + Copilot**: Use `"servers"` instead of `"mcpServers"` as the root key:
+```jsonc
+{
+  "servers": {
+    "zotero": {
+      "command": "node",
+      "args": ["C:/path/to/zotero-mcp/dist/index.js"],
+      "env": {
+        // Web API mode (default)
+        "ZOTERO_API_KEY": "your-api-key-here",
+        "ZOTERO_USER_ID": "your-user-id-here"
+        
+        // Local mode (uncomment below, comment out API_KEY and USER_ID above)
+        // "ZOTERO_MODE": "local"
+        // "ZOTERO_DATA_DIR": ""  // Leave empty for auto-detection, or set your path
+      }
+    }
+  }
+}
+```
+
 ### Where to Add Configuration
 
 | Client | Config File Location | Root Key |
@@ -108,16 +129,6 @@ Add the following configuration to your MCP client. Replace the path with your a
 | **VS Code + Claude** | `.vscode/mcp.json` in workspace | `mcpServers` |
 | **Claude Code (CLI)** | Windows: `%USERPROFILE%\.claude\settings.json`<br>macOS/Linux: `~/.claude/settings.json` | `mcpServers` |
 | **Cursor** | `.cursor/mcp.json` in workspace<br>or Settings → Features → MCP Servers | `mcpServers` |
-
-**Note for VS Code + Copilot**: Use `"servers"` instead of `"mcpServers"` as the root key:
-```jsonc
-{ "servers": { "zotero": { ... } } }
-```
-
-**VS Code User Settings** (global): Press `Ctrl+Shift+P` → "Preferences: Open User Settings (JSON)" and wrap in `"mcp"`:
-```jsonc
-{ "mcp": { "servers": { "zotero": { ... } } } }
-```
 
 After adding configuration, restart your client to load the server.
 
